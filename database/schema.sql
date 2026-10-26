@@ -1,76 +1,77 @@
-CREATE TABLE IF NOT EXISTS competitions (
-  id BIGSERIAL PRIMARY KEY,
-  external_id INTEGER UNIQUE,
-  name TEXT NOT NULL,
-  country TEXT,
-  season INTEGER,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+-- Schéma EFOOT — EURO FOOTBALL INTELLIGENCE
+-- Exécuter dans PostgreSQL (Supabase, local, etc.)
 
-CREATE TABLE IF NOT EXISTS teams (
-  id BIGSERIAL PRIMARY KEY,
-  external_id INTEGER UNIQUE,
-  name TEXT NOT NULL,
-  country TEXT,
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ── Compétitions ───────────────────────────────
+CREATE TABLE competitions (
+  id SERIAL PRIMARY KEY,
+  api_id INTEGER UNIQUE,
+  nom VARCHAR(100) NOT NULL,
+  pays VARCHAR(50),
   logo_url TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  actif BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS matches (
-  id BIGSERIAL PRIMARY KEY,
-  external_id INTEGER UNIQUE,
-  competition_id BIGINT REFERENCES competitions(id),
-  home_team_id BIGINT REFERENCES teams(id),
-  away_team_id BIGINT REFERENCES teams(id),
-  kickoff TIMESTAMPTZ,
-  status TEXT NOT NULL DEFAULT 'scheduled',
-  home_score INTEGER,
-  away_score INTEGER,
-  raw_provider_data JSONB NOT NULL DEFAULT '{}'::jsonb,
-  synced_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS matches_kickoff_idx ON matches(kickoff);
-CREATE INDEX IF NOT EXISTS matches_status_idx ON matches(status);
-
-CREATE TABLE IF NOT EXISTS predictions (
-  id BIGSERIAL PRIMARY KEY,
-  match_id BIGINT NOT NULL REFERENCES matches(id),
-  model_version TEXT NOT NULL DEFAULT 'baseline-v1',
-  generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  published_before_kickoff BOOLEAN NOT NULL DEFAULT FALSE,
-  home_probability NUMERIC(6,5) NOT NULL,
-  draw_probability NUMERIC(6,5) NOT NULL,
-  away_probability NUMERIC(6,5) NOT NULL,
-  home_xg NUMERIC(6,3),
-  away_xg NUMERIC(6,3),
-  predicted_home_goals INTEGER,
-  predicted_away_goals INTEGER,
-  explanation JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CHECK (home_probability >= 0 AND draw_probability >= 0 AND away_probability >= 0),
-  CHECK (ABS(home_probability + draw_probability + away_probability - 1) < 0.01)
-);
-CREATE INDEX IF NOT EXISTS predictions_match_generated_idx ON predictions(match_id, generated_at DESC);
-
-CREATE TABLE IF NOT EXISTS prediction_settlements (
-  id BIGSERIAL PRIMARY KEY,
-  prediction_id BIGINT NOT NULL UNIQUE REFERENCES predictions(id),
-  settled_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  actual_outcome TEXT NOT NULL,
-  predicted_outcome TEXT NOT NULL,
-  brier_score NUMERIC(8,6),
-  log_loss NUMERIC(8,6)
+-- ── Équipes ────────────────────────────────────
+CREATE TABLE teams (
+  id SERIAL PRIMARY KEY,
+  api_id INTEGER UNIQUE,
+  nom VARCHAR(100) NOT NULL,
+  nom_abr VARCHAR(20),
+  logo_url TEXT,
+  pays VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS api_sync_logs (
-  id BIGSERIAL PRIMARY KEY,
-  provider TEXT NOT NULL,
-  task_name TEXT NOT NULL,
-  status TEXT NOT NULL,
-  records_count INTEGER NOT NULL DEFAULT 0,
-  message TEXT,
-  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  finished_at TIMESTAMPTZ
+-- ── Matchs ─────────────────────────────────────
+CREATE TABLE matches (
+  id SERIAL PRIMARY KEY,
+  fixture_id INTEGER UNIQUE NOT NULL,
+  competition_id INTEGER REFERENCES competitions(id),
+  home_team_id INTEGER REFERENCES teams(id),
+  away_team_id INTEGER REFERENCES teams(id),
+  home_team VARCHAR(100) NOT NULL,
+  away_team VARCHAR(100) NOT NULL,
+  match_date TIMESTAMP NOT NULL,
+  competition VARCHAR(100),
+  statut VARCHAR(30) DEFAULT 'scheduled',
+  score_home INTEGER,
+  score_away INTEGER,
+  -- Prédictions probabilistes (0–100 %)
+  prediction_home NUMERIC(5,2),
+  prediction_draw NUMERIC(5,2),
+  prediction_away NUMERIC(5,2),
+  confiance NUMERIC(5,2),
+  -- Métadonnées
+  synced_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- ── Historique des résultats ──────────────────
+CREATE TABLE predictions_log (
+  id SERIAL PRIMARY KEY,
+  match_id INTEGER REFERENCES matches(id) ON DELETE CASCADE,
+  pred_home NUMERIC(5,2),
+  pred_draw NUMERIC(5,2),
+  pred_away NUMERIC(5,2),
+  resultat_verifie VARCHAR(20),
+  est_correct BOOLEAN,
+  evalue_le TIMESTAMP DEFAULT NOW()
+);
+
+-- ── Index pour performances ───────────────────
+CREATE INDEX idx_matches_date ON matches(match_date);
+CREATE INDEX idx_matches_statut ON matches(statut);
+CREATE INDEX idx_matches_fixture ON matches(fixture_id);
+
+-- ── Vue pour l'interface ──────────────────────
+CREATE VIEW vw_matches_liste AS
+SELECT
+  id, fixture_id,
+  home_team, away_team, match_date, competition, statut,
+  score_home, score_away,
+  prediction_home, prediction_draw, prediction_away, confiance
+FROM matches
+ORDER BY match_date ASC;
