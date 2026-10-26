@@ -1,4 +1,4 @@
-require('dotenv').config();
+// Variables directement fournies par Render
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -33,12 +33,8 @@ app.use(cors({
 
 // ── Connexion PostgreSQL ───────────────────────
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || undefined,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000
 });
@@ -108,7 +104,7 @@ if (cron.validate(cronSchedule)) {
 // ── Démarrage ──────────────────────────────────
 app.listen(PORT, () => {
   console.log(`🚀 EFOOT Backend : port ${PORT}`);
-  console.log(`🔗 Healthcheck : http://localhost:${PORT}/api/health`);
+  console.log(`🔗 Healthcheck : /api/health`);
   if (!process.env.API_FOOTBALL_KEY) {
     console.log('ℹ️  Mode démo — données exemples');
   }
