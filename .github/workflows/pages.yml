@@ -1,10 +1,8 @@
-
-name: Publish EURO FOOTBALL INTELLIGENCE
+name: Déployer EFOOT sur GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -13,36 +11,28 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Prepare frontend
-        run: |
-          mkdir -p public
-          cp -r frontend/. public/
-
-      - name: Upload website
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public
-
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Publish website
-        id: deployment
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Préparer le frontend
+        run: |
+          mkdir -p public
+          cp -r frontend/* public/
+          # Vérifier la présence de config.js
+          test -f public/config.js || echo "⚠️ config.js manquant"
+
+      - name: Déployer
         uses: actions/deploy-pages@v4
