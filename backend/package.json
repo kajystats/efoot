@@ -1,19 +1,14 @@
 {
-  "name": "euro-football-intelligence-api",
+  "name": "efoot-backend",
   "version": "1.0.0",
-  "private": true,
-  "description": "API backend for Euro Football Intelligence",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "start": "node server.js"
   },
-  "engines": { "node": ">=20" },
   "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.13.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "node-cron": "^3.0.3",
-    "pg": "^8.13.1"
+    "node-cron": "^3.0.3"
   }
 }
