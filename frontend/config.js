@@ -8,7 +8,6 @@ const ENV = {
 
   // Chemin de base pour GitHub Pages
   // Si ton dépôt = kajystats.github.io/efoot/ → mettre '/efoot/'
-  // Si page utilisateur (racine) → mettre '/'
   BASE_PATH: '/efoot/',
 
   // Mode démo automatique si backend absent
