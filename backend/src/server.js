@@ -63,7 +63,6 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Récupérer la liste des matchs
 app.get('/api/matches', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -86,10 +85,9 @@ async function syncMatches() {
     console.log('⚠️  Clé API-Football absente — synchronisation ignorée');
     return;
   }
-
   try {
     const res = await fetch(
-      'https://v3.football.api-sports.io/fixtures?live=all&next=10',
+      'https://v3.football.api-sports.io/fixtures?next=10',
       { headers: { 'x-apisports-key': key } }
     );
     const data = await res.json();
@@ -99,7 +97,6 @@ async function syncMatches() {
   }
 }
 
-// Tâche planifiée (toutes les 6h par défaut)
 const cronSchedule = process.env.CRON_SYNC_MATCHES || '0 */6 * * *';
 if (cron.validate(cronSchedule)) {
   cron.schedule(cronSchedule, syncMatches);
