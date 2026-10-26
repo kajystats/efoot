@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071b17">
+  <meta name="description" content="Analyses statistiques et probabilités de football, résultats et suivi historique des pronostics.">
+  <title>Euro Football Intelligence</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#/">
+        <span class="brand-mark">EF<span>+</span></span>
+        <span class="brand-name">EURO FOOTBALL <b>INTELLIGENCE</b></span>
+      </a>
+      <div class="nav-label">ESPACE FOOTBALL</div>
+      <nav class="nav">
+        <a href="#/" data-route="home"><span>◫</span> Vue d'ensemble</a>
+        <a href="#/today" data-route="today"><span>▦</span> Matchs du jour</a>
+        <a href="#/tomorrow" data-route="tomorrow"><span>◷</span> Demain</a>
+        <a href="#/live" data-route="live"><span class="live-dot"></span> En direct</a>
+        <a href="#/predictions" data-route="predictions"><span>⌁</span> Pronostics</a>
+        <a href="#/leagues" data-route="leagues"><span>♜</span> Championnats</a>
+        <a href="#/results" data-route="results"><span>✓</span> Résultats</a>
+        <a href="#/performance" data-route="performance"><span>↗</span> Performances</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="side-note"><span class="shield">◆</span><div><b>Analyse, pas certitude</b><small>Les probabilités ne garantissent jamais un résultat.</small></div></div>
+        <a class="admin-link" href="#/admin">⚙ Administration / état API</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Ouvrir le menu">☰</button>
+        <div class="breadcrumb">EUROPE <span>/</span> <b id="pageCrumb">VUE D'ENSEMBLE</b></div>
+        <div class="top-actions"><span class="status-pill"><i></i><span id="connectionLabel">Mode démonstration</span></span><button class="avatar" title="Compte">EF</button></div>
+      </header>
+      <div id="app" class="content" aria-live="polite"></div>
+      <footer><span>EURO FOOTBALL INTELLIGENCE</span><span>Analyses statistiques · Données à vérifier auprès des sources officielles</span></footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

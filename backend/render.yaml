@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: euro-football-intelligence-api
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: API_FOOTBALL_KEY
+        sync: false
+      - key: PGSSL
+        value: "true"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FIXTURE_SYNC_CRON
+        value: "15 3 * * *"
